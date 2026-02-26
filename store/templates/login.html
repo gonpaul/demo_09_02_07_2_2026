@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Авторизация{% endblock %}
+
+{% block content %}
+<h2>Авторизация</h2>
+
+{% if error %}
+    <p class="error">{{ error }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label>Логин</label><br>
+        <input type="text" name="login" required>
+    </div>
+    <div style="margin-top: 10px;">
+        <label>Пароль</label><br>
+        <input type="password" name="password" required>
+    </div>
+    <div style="margin-top: 15px;">
+        <button type="submit" class="btn">Войти</button>
+    </div>
+</form>
+
+<p style="margin-top: 20px;">
+    <a href="{% url 'products' %}">Войти как гость</a>
+</p>
+{% endblock %}

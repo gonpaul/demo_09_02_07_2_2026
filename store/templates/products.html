@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Товары{% endblock %}
+
+{% block content %}
+{% if not user_fio %}
+    <p><a href="{% url 'login' %}">← Вернуться к авторизации</a></p>
+{% endif %}
+
+<h2>Каталог товаров</h2>
+
+{% if can_filter %}
+<form method="get" style="margin-bottom: 20px;">
+    <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск...">
+
+    <select name="category">
+        <option value="">Все категории</option>
+        {% for cat in categories %}
+            <option value="{{ cat.id }}"
+                {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="sort">
+        <option value="">Сортировка</option>
+        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>
+            Название (А-Я)
+        </option>
+        <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>
+            Название (Я-А)
+        </option>
+        <option value="price" {% if sort_by == 'price' %}selected{% endif %}>
+            Цена ↑
+        </option>
+        <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>
+            Цена ↓
+        </option>
+    </select>
+
+    <button type="submit" class="btn">Применить</button>
+    <a href="{% url 'products' %}">Сбросить</a>
+</form>
+{% endif %}
+
+<table>
+    <tr>
+        <th>Фото</th>
+        <th>Название</th>
+        <th>Категория</th>
+        <th>Производитель</th>
+        <th>Поставщик</th>
+        <th>Цена</th>
+        <th>Остаток</th>
+    </tr>
+    {% for product in products %}
+    <tr class="{% if product.discount > 15 %}discount-high{% elif product.stock_qty == 0 %}out-of-stock{% endif %}">
+        <td>
+            {% if product.photo_path %}
+                <img src="/static/{{ product.photo_path }}" width="60" height="60">
+            {% else %}
+                <img src="/static/picture.png" width="60" height="60">
+            {% endif %}
+        </td>
+        <td>
+            {{ product.name }}
+            {% if product.discount > 0 %}
+                <span style="color: red;">-{{ product.discount|floatformat:0 }}%</span>
+            {% endif %}
+        </td>
+        <td>{{ product.category.name }}</td>
+        <td>{{ product.producer.name }}</td>
+        <td>{{ product.supplier.name }}</td>
+        <td>
+            {% if product.discount > 0 %}
+                <s>{{ product.price|floatformat:2 }} ₽</s><br>
+                <b>{{ product.final_price|floatformat:2 }} ₽</b>
+            {% else %}
+                {{ product.price|floatformat:2 }} ₽
+            {% endif %}
+        </td>
+        <td>{{ product.stock_qty }} шт.</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="7">Товары не найдены</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
