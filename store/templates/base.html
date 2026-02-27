@@ -5,20 +5,28 @@
     <title>{% block title %}ООО Обувь{% endblock %}</title>
     <link rel="icon" href="/static/Icon.ico" type="image/x-icon">
     <style>
+        :root {
+            --accent-color: #00FA9A;
+            --secondary-color: #7FFF00;
+            --main-color: #FFFFFF;
+        }
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .header { background: #498c51; color: white; padding: 15px 20px 15px 50px;
+        .header { background: var(--accent-color); color: var(--main-color);
+                   padding: 15px 20px 15px 50px;
                    display: flex; align-items: center; position: relative; }
-        .header a { color: white; margin-left: 20px; }
+        .header a { color: var(--main-color); margin-left: 20px; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .btn { background: #498c51; color: white; border: none; padding: 10px 20px;
-               cursor: pointer; }
+        .btn { background: var(--accent-color); color: var(--main-color);
+               border: none; padding: 10px 20px; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; }
+        th, td { border: 1px solid var(--secondary-color); padding: 8px;
+                 text-align: left; }
+        th { background: var(--secondary-color); }
         input, select { padding: 8px; margin: 5px 0; }
-        .error { color: red; }
-        .discount-high { background-color: #2E8B57; color: white; }
-        .out-of-stock { background-color: #add8e6; }
+        .error { color: var(--accent-color); }
+        .discount-high { background-color: var(--secondary-color);
+                         color: var(--main-color); }
+        .out-of-stock { background-color: var(--accent-color); }
     </style>
 </head>
 <body>
