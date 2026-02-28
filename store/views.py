@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Users, Products, Categories
+from django.db.models import Q
+from .models import Users, Products, Suppliers
 
 
 def login_view(request):
@@ -42,23 +43,32 @@ def products_view(request):
     ).all()
 
     search_query = ''
-    selected_category = ''
+    selected_supplier = ''
     sort_by = ''
 
     if can_filter:
         search_query = request.GET.get('search', '').strip()
         if search_query:
-            products = products.filter(name__icontains=search_query)
+            products = products.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(sku__icontains=search_query) |
+                Q(category__name__icontains=search_query) |
+                Q(producer__name__icontains=search_query) |
+                Q(supplier__name__icontains=search_query)
+            )
 
-        selected_category = request.GET.get('category', '')
-        if selected_category:
-            products = products.filter(category_id=selected_category)
+        selected_supplier = request.GET.get('supplier', '')
+        if selected_supplier:
+            products = products.filter(supplier_id=selected_supplier)
 
         sort_by = request.GET.get('sort', '')
-        if sort_by in ['name', '-name', 'price', '-price']:
-            products = products.order_by(sort_by)
+        if sort_by == 'stock_qty':
+            products = products.order_by('stock_qty')
+        elif sort_by == '-stock_qty':
+            products = products.order_by('-stock_qty')
 
-    categories = Categories.objects.all() if can_filter else []
+    suppliers = Suppliers.objects.all() if can_filter else []
 
     context = {
         'products': products,
@@ -66,9 +76,13 @@ def products_view(request):
         'user_role': user_role,
         'can_filter': can_filter,
         'can_edit': can_edit,
-        'categories': categories,
+        'suppliers': suppliers,
         'search_query': search_query,
-        'selected_category': selected_category,
+        'selected_supplier': selected_supplier,
         'sort_by': sort_by,
     }
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'products_table.html', context)
+
     return render(request, 'products.html', context)

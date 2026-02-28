@@ -1,0 +1,33 @@
+{% for product in products %}
+<tr class="{% if product.discount > 15 %}discount-high{% elif product.stock_qty == 0 %}out-of-stock{% endif %}">
+    <td>
+        {% if product.photo_path %}
+            <img src="/static/{{ product.photo_path }}" width="60" height="60">
+        {% else %}
+            <img src="/static/picture.png" width="60" height="60">
+        {% endif %}
+    </td>
+    <td>
+        {{ product.name }}
+        {% if product.discount > 0 %}
+            <span style="color: red;">-{{ product.discount|floatformat:0 }}%</span>
+        {% endif %}
+    </td>
+    <td>{{ product.category.name }}</td>
+    <td>{{ product.producer.name }}</td>
+    <td>{{ product.supplier.name }}</td>
+    <td>
+        {% if product.discount > 0 %}
+            <s>{{ product.price|floatformat:2 }} ₽</s><br>
+            <b>{{ product.final_price|floatformat:2 }} ₽</b>
+        {% else %}
+            {{ product.price|floatformat:2 }} ₽
+        {% endif %}
+    </td>
+    <td>{{ product.stock_qty }} шт.</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7">Товары не найдены</td>
+</tr>
+{% endfor %}

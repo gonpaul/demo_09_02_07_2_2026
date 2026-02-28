@@ -10,82 +10,80 @@
 <h2>Каталог товаров</h2>
 
 {% if can_filter %}
-<form method="get" style="margin-bottom: 20px;">
-    <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск...">
+<form method="get" id="filter-form" style="margin-bottom: 20px;">
+    <input type="text" name="search" id="search-input"
+           value="{{ search_query }}" placeholder="Поиск...">
 
-    <select name="category">
-        <option value="">Все категории</option>
-        {% for cat in categories %}
-            <option value="{{ cat.id }}"
-                {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>
-                {{ cat.name }}
+    <select name="supplier" id="supplier-select">
+        <option value="">Все поставщики</option>
+        {% for sup in suppliers %}
+            <option value="{{ sup.id }}"
+                {% if selected_supplier == sup.id|stringformat:"i" %}selected{% endif %}>
+                {{ sup.name }}
             </option>
         {% endfor %}
     </select>
 
-    <select name="sort">
+    <select name="sort" id="sort-select">
         <option value="">Сортировка</option>
-        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>
-            Название (А-Я)
+        <option value="stock_qty" {% if sort_by == 'stock_qty' %}selected{% endif %}>
+            Количество ↑
         </option>
-        <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>
-            Название (Я-А)
-        </option>
-        <option value="price" {% if sort_by == 'price' %}selected{% endif %}>
-            Цена ↑
-        </option>
-        <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>
-            Цена ↓
+        <option value="-stock_qty" {% if sort_by == '-stock_qty' %}selected{% endif %}>
+            Количество ↓
         </option>
     </select>
 
-    <button type="submit" class="btn">Применить</button>
     <a href="{% url 'products' %}">Сбросить</a>
 </form>
 {% endif %}
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('filter-form');
+    if (!form) return;
+
+    var searchInput = document.getElementById('search-input');
+    var supplierSelect = document.getElementById('supplier-select');
+    var sortSelect = document.getElementById('sort-select');
+    var tableBody = document.getElementById('products-body');
+    var debounceTimer;
+
+    function updateTable() {
+        var params = new URLSearchParams(new FormData(form));
+        fetch('{% url "products" %}?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(response) { return response.text(); })
+        .then(function(html) {
+            tableBody.innerHTML = html;
+        });
+    }
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updateTable, 300);
+    });
+
+    supplierSelect.addEventListener('change', updateTable);
+    sortSelect.addEventListener('change', updateTable);
+});
+</script>
+
 <table>
-    <tr>
-        <th>Фото</th>
-        <th>Название</th>
-        <th>Категория</th>
-        <th>Производитель</th>
-        <th>Поставщик</th>
-        <th>Цена</th>
-        <th>Остаток</th>
-    </tr>
-    {% for product in products %}
-    <tr class="{% if product.discount > 15 %}discount-high{% elif product.stock_qty == 0 %}out-of-stock{% endif %}">
-        <td>
-            {% if product.photo_path %}
-                <img src="/static/{{ product.photo_path }}" width="60" height="60">
-            {% else %}
-                <img src="/static/picture.png" width="60" height="60">
-            {% endif %}
-        </td>
-        <td>
-            {{ product.name }}
-            {% if product.discount > 0 %}
-                <span style="color: red;">-{{ product.discount|floatformat:0 }}%</span>
-            {% endif %}
-        </td>
-        <td>{{ product.category.name }}</td>
-        <td>{{ product.producer.name }}</td>
-        <td>{{ product.supplier.name }}</td>
-        <td>
-            {% if product.discount > 0 %}
-                <s>{{ product.price|floatformat:2 }} ₽</s><br>
-                <b>{{ product.final_price|floatformat:2 }} ₽</b>
-            {% else %}
-                {{ product.price|floatformat:2 }} ₽
-            {% endif %}
-        </td>
-        <td>{{ product.stock_qty }} шт.</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="7">Товары не найдены</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>Фото</th>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Производитель</th>
+            <th>Поставщик</th>
+            <th>Цена</th>
+            <th>Остаток</th>
+        </tr>
+    </thead>
+    <tbody id="products-body">
+        {% include 'products_table.html' %}
+    </tbody>
 </table>
 {% endblock %}
