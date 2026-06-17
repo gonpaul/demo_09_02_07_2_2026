@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<header>
+    {% if user.is_authenticated %}
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+            {% if user.role == 'Гость' %}
+                <button type="submit">
+                    Войти
+                </button>
+            {% else %}
+                <button type="submit">
+                    Выйти
+                </button>
+            {% endif %}
+    </form>
+    {% endif %}
+</header>
+
+<h1>Товары</h1>
+{% if user.is_staff %}
+<section id="query-box">
+    <form action="{% url 'index' %}" method="get">
+        <input type="search" id="search-bar" name="q" value="{{ current_q }}" placeholder="Название">
+        <select name="category">
+            <option value="">Все категории</option>
+            {% for c in categories %}
+                <option value="{{ c.name }}" {% if current_category == c.name %}
+                selected{% endif %}>
+                    {{ c.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <select name="sort">
+            <option value="">Не сортировано</option>
+            <option value="price_asc"
+                {% if current_sort == 'price_asc' %}selected{% endif %}
+            >
+                Цена по возрастанию
+            </option>
+            <option value="price_desc"
+            {% if current_sort == 'price_desc' %}selected{% endif %}
+            >
+                Цена по убыванию
+            </option>
+        </select>
+
+        <button type="submit">Поиск</button>
+    </form>
+</section>
+{% endif %}
+<section id="item-list">
+    {% for tovar in tovari %}
+    <div class="item-card">
+        <img src="{% static tovar.foto|default:'picture.png' %}" alt="" style="width:200px; height: 200px">
+        <li class="list-style-none">{{ tovar.name }}</li>
+        <div class="item-description">
+            <li class="list-style-none">На складе: {{ tovar.na_sklade }}</li>      
+            <li 
+                class="list-style-none {% if tovar.skidka > 2 %} big-sales {% endif %}">
+                Цена: {{ tovar.discount_price }}
+            </li>  
+        </div>
+        
+            </div>
+    {% endfor %}
+
+</section>
+
+{% endblock %}
